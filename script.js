@@ -120,7 +120,7 @@ function renderArea(){
   loadWeather();
 }
 function renderGuide(){ $('#guideGrid').innerHTML=APP.guideCards.map(g=>`<article class="guide-card"><span class="icon">${g.icon}</span><h3>${t(g.title)}</h3><p>${t(g.text)}</p></article>`).join(''); $('#packingGrid').innerHTML=APP.packingSections.map((s,si)=>`<article class="packing-card"><h3>${s.icon} ${t(s.title)}</h3><ul>${s.items.map((it,ii)=>{const id=`pack-${si}-${ii}`; const checked=localStorage.getItem(id)==='1'?'checked':''; return `<li><label class="check-row"><input type="checkbox" data-check-id="${id}" ${checked}><span>${t(it)}</span></label></li>`}).join('')}</ul></article>`).join(''); $$('input[data-check-id]').forEach(i=>i.onchange=()=>localStorage.setItem(i.dataset.checkId,i.checked?'1':'0')); }
-function lifeCard(r){ const q=r[3]||r[2]; return `<article class="life-card"><small>${r[0]}</small><h3>${r[1]}</h3><p>${r[2]}</p><div class="card-actions"><a class="pill-btn" target="_blank" rel="noopener" href="${nav(q)}">🧭 ${C('nav')}</a><a class="map-btn" target="_blank" rel="noopener" href="${maps(q)}">📍 ${C('map')}</a></div></article>`; }
+function lifeCard(r){ const label=Array.isArray(r)?r[0]:t(r.label); const title=Array.isArray(r)?r[1]:t(r.title); const desc=Array.isArray(r)?r[2]:t(r.desc); const q=Array.isArray(r)?(r[3]||r[2]):(r.query||desc); return `<article class="life-card"><small>${label}</small><h3>${title}</h3><p>${desc}</p><div class="card-actions"><a class="pill-btn" target="_blank" rel="noopener" href="${nav(q)}">🧭 ${C('nav')}</a><a class="map-btn" target="_blank" rel="noopener" href="${maps(q)}">📍 ${C('map')}</a></div></article>`; }
 function emergencyCard(r){
   const label=t(r.label), title=t(r.title), desc=t(r.desc);
   const actions=[];

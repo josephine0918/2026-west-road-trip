@@ -1,1 +1,1 @@
-Upload all files in this folder to your GitHub repository root. Enable Settings > Pages > Deploy from branch > main / root. Keep index.html in the root folder.
+Upload index.html, styles.css, data.js, and script.js to the root of your GitHub repository. Then enable Settings > Pages > Deploy from branch > main > /root.
