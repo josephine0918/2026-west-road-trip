@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>US West Road Trip｜美西自駕</title>
+  <meta name="description" content="Trilingual US West road trip planner with daily route, real-photo place cards, live weather, checklist, stays and Costco stops." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="lang-select-wrap" aria-label="Language switcher">
+    <select id="languageSelect" class="lang-select">
+      <option value="en" selected>EN</option>
+      <option value="zh">中文</option>
+      <option value="vi">VI</option>
+    </select>
+  </div>
+  <main id="app">
+    <section class="view active" id="homeView">
+      <header class="hero"><div class="hero-art"></div><div class="hero-content"><p class="eyebrow" data-i18n="heroKicker"></p><h1 data-i18n="heroTitle"></h1><p class="route" data-i18n="heroRoute"></p></div></header>
+      <section class="block compact-block"><div class="section-head"><h2 data-i18n="highlightsTitle"></h2><p data-i18n="highlightsIntro"></p></div><div class="mini-grid" id="highlightGrid"></div></section>
+      <section class="block today-block"><div class="section-head"><h2 data-i18n="todayTitle"></h2><p data-i18n="todayHint"></p></div><div id="todayCard"></div></section>
+    </section>
+    <section class="view" id="areaView"><div class="page-head"><h2 data-i18n="area"></h2><p data-i18n="regionIntro"></p></div><div class="region-rail-wrap">
+        <button class="region-arrow left" id="regionLeft" type="button" aria-label="Scroll left">‹</button>
+        <div class="region-grid" id="regionChips" tabindex="0" aria-label="Scrollable areas"></div>
+        <button class="region-arrow right" id="regionRight" type="button" aria-label="Scroll right">›</button>
+      </div><div class="day-list" id="dayList"></div></section>
+    <section class="view" id="guideView"><div class="page-head"><p class="eyebrow" data-i18n="guide"></p><h2 data-i18n="guide"></h2><p data-i18n="guideIntro"></p></div><div class="guide-grid" id="guideGrid"></div><article class="notice-card"><strong data-i18n="noLaundry"></strong><p data-i18n="noLaundryText"></p></article><article class="notice-card soft"><strong data-i18n="packing"></strong><p data-i18n="packTip"></p><small data-i18n="checkedHint"></small></article><div class="packing-grid" id="packingGrid"></div></section>
+    <section class="view" id="lifeView"><div class="page-head"><p class="eyebrow" data-i18n="life"></p><h2 data-i18n="life"></h2><p data-i18n="lifeIntro"></p></div><div class="segmented"><button class="active" data-life="costco" data-i18n="costco"></button><button data-life="stays" data-i18n="stays"></button></div><div id="lifeContent"></div></section>
+  </main>
+  <nav class="bottom-nav" aria-label="Main navigation"><button class="active" data-view="homeView"><span>🏠</span><strong data-i18n="home"></strong></button><button data-view="areaView"><span>🌎</span><strong data-i18n="area"></strong></button><button data-view="guideView"><span>🧭</span><strong data-i18n="guide"></strong></button><button data-view="lifeView"><span>🧳</span><strong data-i18n="life"></strong></button></nav>
+  
+  <div class="region-sheet" id="regionSheet" aria-hidden="true">
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+    <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><h2 id="sheetTitle" data-i18n="area"></h2><button class="sheet-close" id="sheetClose" aria-label="Close">×</button></div>
+      <div class="sheet-grid" id="regionSheetGrid"></div>
+    </section>
+  </div>
+  <script src="data.js"></script><script src="script.js"></script>
+</body>
+</html>
