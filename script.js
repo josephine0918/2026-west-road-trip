@@ -27,6 +27,13 @@ function regionDays(id){
   if(id==='twinfalls') return APP.days.filter(d=>d.weather==='twinfalls' || d.region==='twinfalls');
   return APP.days.filter(d=>d.region===id);
 }
+window.selectRegion=function(id){
+  activeRegion=id;
+  showView('areaView');
+  renderArea();
+  const head=document.querySelector('#areaView .page-head');
+  if(head) head.scrollIntoView({behavior:'smooth', block:'start'});
+};
 function setLang(l){ lang=l; localStorage.setItem('trip-lang-en-start-v3-costco',l); document.documentElement.lang=l==='zh'?'zh-Hant':l; const sel=$('#languageSelect'); if(sel) sel.value=l; render(); }
 function maps(q){ return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q); }
 function nav(q){ return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q); }
@@ -75,6 +82,7 @@ function setupRegionScroller(){
   const left=$('#regionLeft'), right=$('#regionRight');
   if(!rail.dataset.sliderBound){
     rail.dataset.sliderBound='1';
+    rail.addEventListener('click', e=>{ const chip=e.target.closest('.chip'); if(chip && chip.dataset.region) window.selectRegion(chip.dataset.region); });
     left?.addEventListener('click',()=>rail.scrollBy({left:-Math.max(220, rail.clientWidth*.75), behavior:'smooth'}));
     right?.addEventListener('click',()=>rail.scrollBy({left:Math.max(220, rail.clientWidth*.75), behavior:'smooth'}));
     rail.addEventListener('scroll', updateRegionArrows, {passive:true});
@@ -91,7 +99,7 @@ function setupRegionScroller(){
 }
 function renderRegions(){
   const rail=$('#regionChips');
-  rail.innerHTML=REGION_CHOICES.map(r=>`<button class="chip ${r.id===activeRegion?'active':''}" type="button" data-region="${r.id}">${r.icon} ${tr(r.label)}</button>`).join('');
+  rail.innerHTML=REGION_CHOICES.map(r=>`<button class="chip ${r.id===activeRegion?'active':''}" type="button" data-region="${r.id}" onclick="selectRegion('${r.id}')">${r.icon} ${tr(r.label)}</button>`).join('');
   $$('#regionChips .chip').forEach(chip=>{
     chip.addEventListener('click',()=>{
       activeRegion=chip.dataset.region;
