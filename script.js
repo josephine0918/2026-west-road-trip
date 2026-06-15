@@ -121,10 +121,27 @@ function renderArea(){
 }
 function renderGuide(){ $('#guideGrid').innerHTML=APP.guideCards.map(g=>`<article class="guide-card"><span class="icon">${g.icon}</span><h3>${t(g.title)}</h3><p>${t(g.text)}</p></article>`).join(''); $('#packingGrid').innerHTML=APP.packingSections.map((s,si)=>`<article class="packing-card"><h3>${s.icon} ${t(s.title)}</h3><ul>${s.items.map((it,ii)=>{const id=`pack-${si}-${ii}`; const checked=localStorage.getItem(id)==='1'?'checked':''; return `<li><label class="check-row"><input type="checkbox" data-check-id="${id}" ${checked}><span>${t(it)}</span></label></li>`}).join('')}</ul></article>`).join(''); $$('input[data-check-id]').forEach(i=>i.onchange=()=>localStorage.setItem(i.dataset.checkId,i.checked?'1':'0')); }
 function lifeCard(r){ const q=r[3]||r[2]; return `<article class="life-card"><small>${r[0]}</small><h3>${r[1]}</h3><p>${r[2]}</p><div class="card-actions"><a class="pill-btn" target="_blank" rel="noopener" href="${nav(q)}">🧭 ${C('nav')}</a><a class="map-btn" target="_blank" rel="noopener" href="${maps(q)}">📍 ${C('map')}</a></div></article>`; }
+function emergencyCard(r){
+  const label=t(r.label), title=t(r.title), desc=t(r.desc);
+  const actions=[];
+  if(r.phone) actions.push(`<a class="pill-btn" href="tel:${r.phone}">📞 ${C('call')}</a>`);
+  if(r.map) actions.push(`<a class="map-btn" target="_blank" rel="noopener" href="${r.map}">📍 ${C('search')}</a>`);
+  return `<article class="life-card"><small>${label}</small><h3>${title}</h3><p>${desc}</p><div class="card-actions">${actions.join('')}</div></article>`;
+}
 function renderLife(){
-  const stays = APP.stays || [];
-  const costcos = APP.costcos || [];
-  $('#lifeContent').innerHTML = `<section class="life-section"><h3 class="life-section-title">🏨 ${C('stays')}</h3><div class="life-grid">${stays.map(lifeCard).join('')}</div></section><section class="life-section"><h3 class="life-section-title">🛒 ${C('costco')}</h3><div class="life-grid">${costcos.map(lifeCard).join('')}</div></section>`;
+  let html='';
+  if(activeLife==='costco'){
+    const rows=APP.costcos || [];
+    html = `<div class="life-grid">${rows.map(lifeCard).join('')}</div>`;
+  }else if(activeLife==='stays'){
+    const rows=APP.stays || [];
+    html = `<div class="life-grid">${rows.map(lifeCard).join('')}</div>`;
+  }else{
+    const rows=APP.emergencyContacts || [];
+    html = `<div class="life-grid">${rows.map(emergencyCard).join('')}</div>`;
+  }
+  $('#lifeContent').innerHTML = html;
+  $$('.segmented button').forEach(b=>b.classList.toggle('active', b.dataset.life===activeLife));
 }
 async function loadPlacePhotos(){ const imgs=$$('.stop-img[data-photo-query]'); for(const img of imgs){ if(img.dataset.loaded) continue; const q=img.dataset.photoQuery; img.dataset.loaded='1'; commonsPhoto(q).then(url=>{ if(url) img.src=url; }).catch(()=>{}); } }
 async function loadWeather(){ const boxes=$$('.weather-box'); for(const box of boxes){ const key=box.dataset.weatherKey, id=box.dataset.weatherId, wp=APP.weatherPlaces[key]; const el=document.getElementById(id), meta=document.getElementById(id+'-meta'); if(!wp || !el) continue; if(el.dataset.loaded===lang) continue; try{ const url=`https://api.open-meteo.com/v1/forecast?latitude=${wp.lat}&longitude=${wp.lon}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`; const res=await fetch(url); if(!res.ok) throw new Error('weather'); const data=await res.json(); const temp=data.current?.temperature_2m; const wind=data.current?.wind_speed_10m; el.textContent = temp!==undefined ? `${C('currentWeather')}：${Math.round(temp)}°C${wind!==undefined?` · wind ${Math.round(wind)} km/h`:''}` : C('weatherUnavailable'); if(meta && data.current?.time) meta.textContent = `Updated: ${data.current.time.replace('T',' ')}`; el.dataset.loaded=lang; }catch(e){ el.innerHTML=`<a class="weather-link" href="${wp.link}" target="_blank" rel="noopener">${C('weatherUnavailable')}</a>`; }} }
@@ -133,6 +150,7 @@ function closeRegionSheet(){ const el=$('#regionSheet'); if(!el) return; el.clas
 function showView(viewId){ $$('.view').forEach(v=>v.classList.toggle('active',v.id===viewId)); $$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===viewId)); if(viewId==='areaView') renderArea(); if(viewId==='guideView') renderGuide(); if(viewId==='lifeView') renderLife(); window.scrollTo({top:0,behavior:'smooth'}); }
 function render(){ renderStaticText(); const sel=$('#languageSelect'); if(sel) sel.value=lang; renderHighlights(); renderToday(); renderRegionSheet(); renderArea(); renderGuide(); renderLife(); loadPlacePhotos(); loadWeather(); }
 $('#languageSelect')?.addEventListener('change', e=>setLang(e.target.value));
+$$('.segmented button').forEach(b=>b.onclick=()=>{ activeLife=b.dataset.life; renderLife(); });
 $$('.bottom-nav button').forEach(b=>b.onclick=()=>{ if(b.dataset.view==='areaView'){ openRegionSheet(); } else { showView(b.dataset.view); }});
 $('#sheetClose')?.addEventListener('click', closeRegionSheet);
 $('#sheetBackdrop')?.addEventListener('click', closeRegionSheet);
