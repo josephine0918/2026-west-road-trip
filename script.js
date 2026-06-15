@@ -1,6 +1,6 @@
 
 const APP = window.APP_DATA;
-let lang = localStorage.getItem('trip-lang-en-start-v3-costco') || 'en';
+let lang = localStorage.getItem('trip-lang-v6-nozh-en') || 'en';
 let activeRegion = 'all';
 let activeLife = 'costco';
 const REGION_CHOICES = [
@@ -18,7 +18,16 @@ const REGION_CHOICES = [
 ];
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-function t(v){ return typeof v === 'string' ? v : (v?.[lang] || v?.zh || v?.en || ''); }
+function t(v){
+  if(typeof v === 'string') return v;
+  if(!v) return '';
+  const cjk=/[\u4e00-\u9fff]/;
+  if(lang==='zh') return v.zh || v.en || '';
+  const val = v[lang] || (lang==='vi' ? v.en : '');
+  if(val && !cjk.test(String(val))) return val;
+  const fb = v.en || '';
+  return cjk.test(String(fb)) ? '' : fb;
+}
 function C(k){ return APP.copy[lang][k] || APP.copy.zh[k] || k; }
 function tr(v){ return v?.[lang] || v?.zh || v?.en || ''; }
 function regionDays(id){
@@ -34,7 +43,7 @@ window.selectRegion=function(id){
   const head=document.querySelector('#areaView .page-head');
   if(head) head.scrollIntoView({behavior:'smooth', block:'start'});
 };
-function setLang(l){ lang=l; localStorage.setItem('trip-lang-en-start-v3-costco',l); document.documentElement.lang=l==='zh'?'zh-Hant':l; const sel=$('#languageSelect'); if(sel) sel.value=l; render(); }
+function setLang(l){ lang=l; localStorage.setItem('trip-lang-v6-nozh-en',l); document.documentElement.lang=l==='zh'?'zh-Hant':l; const sel=$('#languageSelect'); if(sel) sel.value=l; render(); }
 function maps(q){ return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q); }
 function nav(q){ return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q); }
 function photoQuery(s){ return (s?.query || t(s?.title) || 'US west road trip landmark').replace(/\s+/g,' ').trim(); }
