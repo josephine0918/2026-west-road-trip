@@ -63,3 +63,9 @@ body.sheet-open{overflow:hidden}.region-sheet{position:fixed;inset:0;z-index:95;
 @media (max-width:720px){.region-notes-card{padding:14px;border-radius:20px}.region-notes-grid{grid-template-columns:1fr}.region-notes-head h3{font-size:20px}}
 
 .region-grid .chip{cursor:pointer;touch-action:manipulation}
+
+/* fix region chips click and clean page headings */
+.region-grid{position:relative;z-index:2;pointer-events:auto}
+.region-grid .chip{pointer-events:auto;user-select:none}
+.region-arrow{z-index:3}
+#guideView .page-head .eyebrow,#lifeView .page-head .eyebrow{display:none}

@@ -48,7 +48,7 @@ function tripDay(){ const now=new Date(); const year=now.getFullYear(); const st
 function renderStaticText(){ $$('[data-i18n]').forEach(el=>{ el.textContent=C(el.dataset.i18n); }); }
 function renderHighlights(){ $('#highlightGrid').innerHTML=APP.highlights.map(h=>`<article class="mini-card"><span class="icon">${h.icon}</span><h3>${t(h.title)}</h3><p>${t(h.text)}</p></article>`).join(''); }
 function weatherBox(day){ const wp=APP.weatherPlaces[day.weather]; const id=`w-${day.day}`; return `<div class="info-box weather-box" data-weather-key="${day.weather}" data-weather-id="${id}"><strong>${C('weather')} · ${wp.label}</strong><p class="weather-live" id="${id}">${C('loadingWeather')}</p><p class="weather-meta" id="${id}-meta"></p><a class="weather-link" href="${wp.link}" target="_blank" rel="noopener">${C('openWeather')}</a></div>`; }
-function dayCard(day, full=false){ return `<article class="day-card" id="day${day.day}"><div class="day-cover" style="background-image:url('${coverPhoto(day)}')"><div class="day-cover-content"><span class="badge">Day ${day.day} · ${day.date}</span><h3>${t(day.title)}</h3></div></div><div class="day-body"><p class="day-summary">${t(day.summary)}</p><div class="day-info-grid"><div class="info-box"><strong>${C('stay')}</strong><p>${day.stay}</p><a class="weather-link" href="${maps(day.stay)}" target="_blank" rel="noopener">${C('map')}</a></div>${weatherBox(day)}<div class="info-box"><strong>${C('outfit')}</strong><p>${t(day.outfit)}</p></div><div class="info-box"><strong>${C('note')}</strong><p>${t(day.note)}</p></div></div><div class="today-lines">${day.lines.map(l=>`<div class="today-line"><span class="time">${l.time}</span><strong>${t(l.title)}</strong></div>`).join('')}</div>${full?`<h3 class="details-title">${C('details')}</h3><div class="place-grid">${day.stops.map(stopCard).join('')}</div>`:''}</div></article>`; }
+function dayCard(day, full=false){ return `<article class="day-card" id="day${day.day}"><div class="day-cover" style="background-image:url('${coverPhoto(day)}')"><div class="day-cover-content"><span class="badge">Day ${day.day} · ${day.date}</span><h3>${t(day.title)}</h3></div></div><div class="day-body"><p class="day-summary">${t(day.summary)}</p><div class="day-info-grid"><div class="info-box"><strong>${C('stay')}</strong><p>${day.stay}</p><a class="weather-link" href="${maps(day.stayMap||day.stay)}" target="_blank" rel="noopener">${C('map')}</a></div>${weatherBox(day)}<div class="info-box"><strong>${C('outfit')}</strong><p>${t(day.outfit)}</p></div><div class="info-box"><strong>${C('note')}</strong><p>${t(day.note)}</p></div></div><div class="today-lines">${day.lines.map(l=>`<div class="today-line"><span class="time">${l.time}</span><strong>${t(l.title)}</strong></div>`).join('')}</div>${full?`<h3 class="details-title">${C('details')}</h3><div class="place-grid">${day.stops.map(stopCard).join('')}</div>`:''}</div></article>`; }
 function stopCard(s){ const q=photoQuery(s); return `<article class="stop-card"><div class="img-wrap" data-title="${t(s.title)}"><img class="stop-img" src="${fallbackPhoto(q)}" data-photo-query="${q.replace(/"/g,'&quot;')}" alt="${t(s.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.classList.add('image-failed')"></div><div class="stop-body"><span class="tag">${t(s.type)}</span><h4>${t(s.title)}</h4><p>${t(s.desc)}</p><div class="detail-grid"><div class="detail"><strong>${C('ticket')}</strong><span>${t(s.ticket)}</span></div><div class="detail"><strong>${C('hours')}</strong><span>${t(s.hours)}</span></div><div class="detail"><strong>${C('parking')}</strong><span>${t(s.parking)}</span></div><div class="detail"><strong>${C('tip')}</strong><span>${t(s.tip)}</span></div></div><div class="card-actions"><a class="pill-btn" href="${s.nav}" target="_blank" rel="noopener">🧭 ${C('nav')}</a><a class="map-btn" href="${s.map}" target="_blank" rel="noopener">📍 ${C('map')}</a><a class="map-btn" href="${s.official}" target="_blank" rel="noopener">ℹ️ ${C('official')}</a></div></div></article>`; }
 function renderToday(){ const day=APP.days.find(d=>d.day===tripDay()) || APP.days[0]; $('#todayCard').innerHTML=dayCard(day,false); loadPlacePhotos(); loadWeather(); }
 function renderRegionSheet(){ const box=$('#regionSheetGrid'); if(!box) return; box.innerHTML=REGION_CHOICES.map(r=>`<button class="sheet-card" data-region-sheet="${r.id}"><span class="sheet-card-icon">${r.icon}</span><strong>${tr(r.label)}</strong></button>`).join(''); $$('#regionSheetGrid .sheet-card').forEach(b=>b.onclick=()=>{ activeRegion=b.dataset.regionSheet; closeRegionSheet(); showView('areaView'); renderArea(); window.scrollTo({top:0,behavior:'smooth'});}); }
@@ -63,7 +63,7 @@ function renderRegionNotes(){
 function updateRegionArrows(){
   const rail=$('#regionChips'), left=$('#regionLeft'), right=$('#regionRight');
   if(!rail || !left || !right) return;
-  const max=rail.scrollWidth-rail.clientWidth;
+  const max=Math.max(0, rail.scrollWidth-rail.clientWidth);
   const can=max>4;
   left.style.display=right.style.display=can?'grid':'none';
   left.disabled=rail.scrollLeft<=2;
@@ -71,47 +71,36 @@ function updateRegionArrows(){
 }
 function setupRegionScroller(){
   const rail=$('#regionChips');
-  if(!rail || rail.dataset.sliderBound==='1') return;
-  rail.dataset.sliderBound='1';
+  if(!rail) return;
   const left=$('#regionLeft'), right=$('#regionRight');
-  left?.addEventListener('click',()=>{rail.scrollBy({left:-Math.max(220, rail.clientWidth*.75), behavior:'smooth'});});
-  right?.addEventListener('click',()=>{rail.scrollBy({left:Math.max(220, rail.clientWidth*.75), behavior:'smooth'});});
-  rail.addEventListener('scroll', updateRegionArrows, {passive:true});
-  window.addEventListener('resize', updateRegionArrows);
-  let down=false, startX=0, startScroll=0, moved=false;
-  rail.addEventListener('pointerdown', e=>{
-    down=true; moved=false; startX=e.clientX; startScroll=rail.scrollLeft;
-    rail.classList.add('dragging'); rail.setPointerCapture?.(e.pointerId);
-  });
-  rail.addEventListener('pointermove', e=>{
-    if(!down) return;
-    const dx=e.clientX-startX;
-    if(Math.abs(dx)>3) moved=true;
-    rail.scrollLeft=startScroll-dx;
-  });
-  rail.addEventListener('pointerup', e=>{
-    down=false; rail.classList.remove('dragging'); rail.releasePointerCapture?.(e.pointerId);
-    if(moved){ rail.dataset.justDragged='1'; setTimeout(()=>delete rail.dataset.justDragged,120); }
-  });
-  rail.addEventListener('pointercancel',()=>{down=false; rail.classList.remove('dragging');});
-  rail.addEventListener('click', e=>{
-    if(rail.dataset.justDragged==='1'){ e.preventDefault(); e.stopPropagation(); return; }
-    const chip=e.target.closest('.chip[data-region]');
-    if(chip){ activeRegion=chip.dataset.region; renderArea(); window.scrollTo({top:0,behavior:'smooth'}); }
-  });
-  rail.addEventListener('wheel', e=>{
-    if(rail.scrollWidth<=rail.clientWidth) return;
-    if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
-      rail.scrollLeft += e.deltaY;
-      e.preventDefault();
-    }
-  }, {passive:false});
+  if(!rail.dataset.sliderBound){
+    rail.dataset.sliderBound='1';
+    left?.addEventListener('click',()=>rail.scrollBy({left:-Math.max(220, rail.clientWidth*.75), behavior:'smooth'}));
+    right?.addEventListener('click',()=>rail.scrollBy({left:Math.max(220, rail.clientWidth*.75), behavior:'smooth'}));
+    rail.addEventListener('scroll', updateRegionArrows, {passive:true});
+    window.addEventListener('resize', updateRegionArrows);
+    rail.addEventListener('wheel', e=>{
+      if(rail.scrollWidth<=rail.clientWidth) return;
+      if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+        rail.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, {passive:false});
+  }
   setTimeout(updateRegionArrows, 0);
 }
-
 function renderRegions(){
   const rail=$('#regionChips');
   rail.innerHTML=REGION_CHOICES.map(r=>`<button class="chip ${r.id===activeRegion?'active':''}" type="button" data-region="${r.id}">${r.icon} ${tr(r.label)}</button>`).join('');
+  $$('#regionChips .chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+      activeRegion=chip.dataset.region;
+      renderArea();
+      const head=document.querySelector('#areaView .page-head');
+      if(head) head.scrollIntoView({behavior:'smooth', block:'start'});
+      else window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
   setupRegionScroller();
   setTimeout(updateRegionArrows, 0);
 }
